@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gmail Mobile-Like Frontend</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    /* Base Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    } 
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      overflow: hidden;
+    }
+
+    /* Header Styling */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      background: linear-gradient(to right, #0181b9, #002afd);
+      color: white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .header .menu-icon {
+      font-size: 28px;
+      cursor: pointer;
+    }
+    .header .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .header .actions .material-icons {
+      font-size: 24px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    /* Main Layout */
+    .main {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+      display: none;
+      position: absolute;
+      z-index: 2;
+      height: 100%;
+      width: 80%;
+      background-color: white;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+      padding: 10px 0;
+      transition: transform 0.3s ease-in-out;
+      transform: translateX(-100%);
+    }
+    .sidebar.active {
+      display: block;
+      transform: translateX(0);
+    }
+    .sidebar ul {
+      list-style: none;
+    }
+    .sidebar li {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+    .sidebar li .material-icons {
+      margin-right: 10px;
+      font-size: 20px;
+    }
+    .sidebar li:hover, .sidebar li.active {
+      background-color: #f4f4f4;
+    }
+
+    /* Email List Styling */
+    .email-list {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background-color: white;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .email-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      margin: 10px 15px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s, background-color 0.2s;
+      cursor: pointer;
+    }
+    .email-item:hover {
+      transform: translateY(-2px);
+      background-color: #f4f4f4;
+    }
+
+    .email-left {
+      display: flex;
+      flex-direction: column;
+      max-width: 70%;
+      gap: 5px;
+    }
+    .email-left .sender {
+      font-weight: bold;
+      font-size: 14px;
+      color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .email-left .subject {
+      font-size: 12px;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .email-right {
+      text-align: right;
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* Popup Modal Styling */
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 3;
+    }
+    .popup.active {
+      display: flex;
+    }
+    .popup-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .popup-header h2 {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+    }
+    .close-btn {
+      cursor: pointer;
+      font-size: 18px;
+      color: #999;
+    }
+    .popup-body {
+      font-size: 14px;
+      color: #555;
+    }
+
+    /* Mobile First Responsive Design */
+    @media (max-width: 768px) {
+      .main {
+        flex-direction: column;
+      }
+      .email-list {
+        margin-left: 0;
+      }
+      .sidebar {
+        width: 75%;
+        transform: translateX(-100%);
+        position: relative;
+      }
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      .header .menu-icon {
+        font-size: 30px;
+      }
+      .email-item {
+        padding: 10px 15px;
+      }
+
+      .email-left .sender,
+      .email-left .subject {
+        font-size: 12px;
+      }
+    }
+
+    /* Desktop (Laptop) Layout */
+    @media (min-width: 769px) {
+      .sidebar {
+        display: block;
+        position: relative;
+        width: 250px;
+        transform: translateX(0);
+      }
+      .main {
+        flex-direction: row;
+      }
+      .email-list {
+        margin-left: 0; /* No margin-left now, should align correctly */
+        padding: 10px;
+      }
+      .header .menu-icon {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <span class="material-icons menu-icon" onclick="toggleSidebar()">menu</span>
+      <span class="logo">Feedback Mail</span>
+      <div class="actions">
+        <span class="material-icons">search</span>
+        <span class="material-icons">settings</span>
+        <span class="material-icons">account_circle</span>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main">
+      <!-- Sidebar -->
+      <nav class="sidebar" id="sidebar">
+        <ul>
+          <a href="/profile" style="text-decoration: none; color: inherit;">  <li>
+            
+              <span class="material-icons">inbox</span>Inbox
+            
+          </li></a>
+          
+          <a href="/send" style="text-decoration: none; color: inherit;"> <li>
+            
+              <span class="material-icons">send</span>Send
+            
+          </li></a>
+
+
+          <a href="/logout" style="text-decoration: none; color: inherit;">
+            <li>
+            
+              <span class="material-icons">logout</span>Logout
+            
+          </li>
+        </a>
+          
+          <!-- <li>
+            <span class="material-icons">drafts</span>Drafts
+          </li>
+          <li>
+            <span class="material-icons">delete</span>Trash
+          </li> -->
+        </ul>
+      </nav>
+
+      <!-- Email List -->
+      <div class="email-list" id="emailList">
+        <% messages.forEach(message => { %>
+          <div class="email-item" onclick="openPopup('<%= message.subject %>', '<%= message.timestamp %>', '<%= message.content %>')">
+            <div class="email-left">
+              <div class="sender">Anonymous</div>
+              <div class="subject">Subject: <%= message.subject %></div>
+            </div>
+            <div class="email-right"><%= new Date(message.createdAt).toLocaleString() %></div>
+          </div>
+        <% }) %>  
+      </div>
+    </div>
+
+    <!-- Popup Modal -->
+    <div class="popup" id="popup">
+      <div class="popup-content">
+        <div class="popup-header">
+          <h2 id="popupSubject"></h2>
+          <span class="close-btn" onclick="closePopup()">X</span>
+        </div>
+        <div class="popup-body">
+          <p><strong>Content:</strong> <span id="popupTimestamp"></span></p>
+          <p id="popupContent"></p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('active');
+    }
+
+    function openPopup(subject, timestamp, content) {
+      const popup = document.getElementById('popup');
+      document.getElementById('popupSubject').innerText = subject;
+      document.getElementById('popupTimestamp').innerText = timestamp;
+      document.getElementById('popupContent').innerText = content;
+      popup.classList.add('active');
+    }
+
+    function closePopup() {
+      const popup = document.getElementById('popup');
+      popup.classList.remove('active');
+    }
+  </script>
+</body>
+</html>
