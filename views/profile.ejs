@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gmail Mobile-Like Frontend</title>
+  <title>SuperMentor Mail</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
@@ -185,6 +185,13 @@
       color: #555;
     }
 
+    .popup-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+    }
+
     /* Mobile First Responsive Design */
     @media (max-width: 768px) {
       .main {
@@ -240,7 +247,7 @@
     <!-- Header -->
     <header class="header">
       <span class="material-icons menu-icon" onclick="toggleSidebar()">menu</span>
-      <span class="logo">Feedback Mail</span>
+      <span class="logo">SM Mail</span>
       <div class="actions">
         <span class="material-icons">search</span>
         <span class="material-icons">settings</span>
@@ -283,10 +290,14 @@
         </ul>
       </nav>
 
+      <form id="deleteForm" action="/delete-message" method="POST" style="display: none;">
+        <input type="hidden" name="messageId" id="messageIdInput">
+      </form>
+
       <!-- Email List -->
       <div class="email-list" id="emailList">
         <% messages.forEach(message => { %>
-          <div class="email-item" onclick="openPopup('<%= message.subject %>', '<%= message.timestamp %>', '<%= message.content %>')">
+          <div class="email-item" onclick="openPopup('<%= message.subject %>', '<%= message.timestamp %>', '<%= message.content %>', '<%= message._id %>')">
             <div class="email-left">
               <div class="sender">Anonymous</div>
               <div class="subject">Subject: <%= message.subject %></div>
@@ -300,32 +311,58 @@
     <!-- Popup Modal -->
     <div class="popup" id="popup">
       <div class="popup-content">
+        
         <div class="popup-header">
           <h2 id="popupSubject"></h2>
-          <span class="close-btn" onclick="closePopup()">X</span>
+          <span class="close-btn" onclick="closePopup()" style="color: rgb(253, 103, 103);" >X</span>
+          
         </div>
+
         <div class="popup-body">
-          <p><strong>Content:</strong> <span id="popupTimestamp"></span></p>
+          <p> <span id="popupTimestamp"></span></p>
           <p id="popupContent"></p>
         </div>
+
+       <div>
+        
+        <p onclick="deleteMessage()" style="color: rgb(253, 103, 103);" class="popup-footer">delete</p>
+      
+      </div> 
+      
       </div>
     </div>
 
   </div>
 
   <script>
+
+function deleteMessage() {
+  const messageId = document.getElementById('popupContent').getAttribute('data-message-id');
+  document.getElementById('messageIdInput').value = messageId;
+  document.getElementById('deleteForm').submit();
+}
+
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
       sidebar.classList.toggle('active');
     }
+    
+    // function openPopup(subject, timestamp, content) {
+    //   const popup = document.getElementById('popup');
+    //   document.getElementById('popupSubject').innerText = subject;
+    //   document.getElementById('popupTimestamp').innerText = timestamp;
+    //   document.getElementById('popupContent').innerText = content;
+    //   popup.classList.add('active');
+    // }
 
-    function openPopup(subject, timestamp, content) {
-      const popup = document.getElementById('popup');
-      document.getElementById('popupSubject').innerText = subject;
-      document.getElementById('popupTimestamp').innerText = timestamp;
-      document.getElementById('popupContent').innerText = content;
-      popup.classList.add('active');
-    }
+    function openPopup(subject, timestamp, content, messageId) {
+  const popup = document.getElementById('popup');
+  document.getElementById('popupSubject').innerText = subject;
+  document.getElementById('popupTimestamp').innerText = timestamp;
+  document.getElementById('popupContent').innerText = content;
+  document.getElementById('popupContent').setAttribute('data-message-id', messageId);
+  popup.classList.add('active');
+}
 
     function closePopup() {
       const popup = document.getElementById('popup');
@@ -334,3 +371,4 @@
   </script>
 </body>
 </html>
+
